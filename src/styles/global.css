@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-red: #e94560;
+  --color-brand-cyan: #00d4ff;
+  --color-brand-navy: #0f3460;
+  --color-brand-darknavy: #16213e;
+  --color-brand-dark: #1a1a2e;
+  --font-sans: "Segoe UI", Arial, sans-serif;
+}
