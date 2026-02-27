@@ -1,0 +1,58 @@
+---
+interface Props {
+  report: {
+    id: string;
+    date: string;
+    type: 'friday' | 'monday';
+    league: string;
+    title: string;
+    summary: string;
+  };
+  leagueFlag?: string;
+  leagueName?: string;
+  href: string;
+}
+
+const { report, leagueFlag, leagueName, href } = Astro.props;
+
+const typeLabel = report.type === 'friday' ? '📋 Friday Brief' : '📊 Monday Debrief';
+const typeColor = report.type === 'friday' ? 'text-[#00d4ff]' : 'text-[#e94560]';
+
+const dateFormatted = new Date(report.date + 'T12:00:00Z').toLocaleDateString('en-GB', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+});
+---
+
+<a
+  href={href}
+  class="block rounded-xl border border-gray-800 bg-[#1a1a1a] p-5 hover:border-[#e94560]/50 hover:bg-[#1f1f1f] transition-all duration-200 group"
+>
+  <!-- Top row: league + type badge -->
+  <div class="flex items-center justify-between gap-3 mb-3">
+    <div class="flex items-center gap-2">
+      {leagueFlag && <span class="text-sm">{leagueFlag}</span>}
+      {leagueName && <span class="text-xs text-gray-500">{leagueName}</span>}
+    </div>
+    <span class={`text-xs font-semibold ${typeColor}`}>{typeLabel}</span>
+  </div>
+
+  <!-- Title -->
+  <h3 class="font-semibold text-white text-sm mb-2 group-hover:text-[#e94560] transition-colors leading-snug">
+    {report.title}
+  </h3>
+
+  <!-- Summary -->
+  <p class="text-xs text-gray-500 leading-relaxed line-clamp-2">
+    {report.summary}
+  </p>
+
+  <!-- Footer -->
+  <div class="mt-4 flex items-center justify-between">
+    <span class="text-xs text-gray-600">{dateFormatted}</span>
+    <span class="text-xs text-[#e94560] opacity-0 group-hover:opacity-100 transition-opacity">
+      Read report →
+    </span>
+  </div>
+</a>

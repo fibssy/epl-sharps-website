@@ -1,0 +1,103 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import ReportCard from '../../components/ReportCard.astro';
+import { leagues } from '../../data/leagues';
+
+export async function getStaticPaths() {
+  return leagues
+    .filter((l) => l.active)
+    .map((league) => ({
+      params: { league: league.slug },
+      props: { league },
+    }));
+}
+
+const { league } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+// Load all reports for this league
+const reportModules = import.meta.glob('../../data/reports/**/*.json', { eager: true });
+const leagueReports = (Object.values(reportModules) as any[])
+  .filter((r) => r.league === league.slug)
+  .sort((a, b) => b.date.localeCompare(a.date));
+
+const fridayReports = leagueReports.filter((r) => r.type === 'friday');
+const mondayReports = leagueReports.filter((r) => r.type === 'monday');
+---
+
+<Layout
+  title={league.name}
+  description={`Sharps intelligence reports for the ${league.name}`}
+>
+  <Header />
+
+  <main class="max-w-6xl mx-auto px-6 py-12">
+
+    <!-- League Header -->
+    <div class="mb-12 pb-8 border-b border-gray-800">
+      <a
+        href={base + '/'}
+        class="inline-flex items-center gap-1.5 text-xs text-gray-600 hover:text-gray-300 transition-colors mb-6"
+      >
+        ← All Leagues
+      </a>
+      <div class="flex items-center gap-4">
+        <span class="text-5xl">{league.flag}</span>
+        <div>
+          <h1 class="text-2xl font-bold text-white">{league.name}</h1>
+          <p class="text-sm text-gray-500 mt-1">
+            {leagueReports.length} report{leagueReports.length !== 1 ? 's' : ''} published
+            · Updated every Friday &amp; Monday
+          </p>
+        </div>
+      </div>
+    </div>
+
+    {leagueReports.length === 0 ? (
+      <div class="rounded-xl border border-gray-800 bg-[#1a1a1a] p-12 text-center">
+        <p class="text-gray-500 text-sm">No {league.name} reports yet.</p>
+        <p class="text-gray-700 text-xs mt-2">The bot publishes every Friday &amp; Monday.</p>
+      </div>
+    ) : (
+      <div class="space-y-12">
+
+        <!-- Friday Briefs -->
+        {fridayReports.length > 0 && (
+          <section>
+            <h2 class="text-xs font-semibold uppercase tracking-widest text-[#00d4ff] mb-5">
+              📋 Friday Sharps Briefs
+            </h2>
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {fridayReports.map((report) => (
+                <ReportCard
+                  report={report}
+                  href={`${base}/${league.slug}/${report.id}`}
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
+        <!-- Monday Debriefs -->
+        {mondayReports.length > 0 && (
+          <section>
+            <h2 class="text-xs font-semibold uppercase tracking-widest text-[#e94560] mb-5">
+              📊 Monday Debriefs
+            </h2>
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {mondayReports.map((report) => (
+                <ReportCard
+                  report={report}
+                  href={`${base}/${league.slug}/${report.id}`}
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
+      </div>
+    )}
+
+  </main>
+</Layout>

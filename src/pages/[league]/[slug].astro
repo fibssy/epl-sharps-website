@@ -1,0 +1,127 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import { leagues } from '../../data/leagues';
+
+export async function getStaticPaths() {
+  const reportModules = import.meta.glob('../../data/reports/**/*.json', { eager: true });
+  return (Object.values(reportModules) as any[]).map((report) => ({
+    params: { league: report.league, slug: report.id },
+    props: { report },
+  }));
+}
+
+const { report } = Astro.props;
+const league = leagues.find((l) => l.slug === report.league);
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+const typeLabel = report.type === 'friday' ? '📋 Friday Sharps Brief' : '📊 Monday Debrief';
+const typeColor = report.type === 'friday' ? 'text-[#00d4ff]' : 'text-[#e94560]';
+
+const dateFormatted = new Date(report.date + 'T12:00:00Z').toLocaleDateString('en-GB', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
+---
+
+<Layout title={report.title}>
+  <Header />
+
+  <main class="max-w-3xl mx-auto px-6 py-12">
+
+    <!-- Back -->
+    <a
+      href={`${base}/${report.league}`}
+      class="inline-flex items-center gap-1.5 text-xs text-gray-600 hover:text-gray-300 transition-colors mb-8"
+    >
+      ← Back to {league?.name}
+    </a>
+
+    <!-- Report Header -->
+    <div class="mb-10 pb-8 border-b border-gray-800">
+      <div class="flex items-center gap-2 mb-4">
+        <span>{league?.flag}</span>
+        <span class="text-xs text-gray-500">{league?.name}</span>
+        <span class="text-gray-700 text-xs">·</span>
+        <span class={`text-xs font-semibold ${typeColor}`}>{typeLabel}</span>
+      </div>
+      <h1 class="text-2xl font-bold text-white mb-2 leading-tight">{report.title}</h1>
+      <p class="text-sm text-gray-500">{dateFormatted}</p>
+      {report.summary && (
+        <p class="mt-4 text-sm text-gray-400 leading-relaxed border-l-2 border-[#e94560]/40 pl-4">
+          {report.summary}
+        </p>
+      )}
+    </div>
+
+    <!-- Report Content -->
+    <div class="report-content" set:html={report.htmlContent} />
+
+  </main>
+</Layout>
+
+<style is:global>
+  .report-content h2 {
+    color: #e94560;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    border-bottom: 1px solid #2a2a2a;
+    padding-bottom: 8px;
+    margin-top: 36px;
+    margin-bottom: 14px;
+  }
+  .report-content h3 {
+    color: #00d4ff;
+    font-size: 13px;
+    font-weight: 600;
+    margin: 20px 0 8px 0;
+  }
+  .report-content p {
+    color: #c0c0c0;
+    font-size: 13px;
+    line-height: 1.8;
+    margin: 10px 0;
+  }
+  .report-content strong { color: #ffffff; }
+  .report-content em { color: #888; font-size: 12px; }
+  .report-content ul {
+    padding-left: 20px;
+    margin: 10px 0;
+  }
+  .report-content li {
+    color: #c0c0c0;
+    font-size: 13px;
+    line-height: 1.9;
+    margin-bottom: 4px;
+  }
+  .report-content hr {
+    border: none;
+    border-top: 1px solid #2a2a2a;
+    margin: 28px 0;
+  }
+  .report-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 12px;
+  }
+  .report-content th {
+    background: #0f3460;
+    color: #00d4ff;
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+  .report-content td {
+    padding: 9px 12px;
+    border-bottom: 1px solid #2a2a2a;
+    color: #c0c0c0;
+  }
+  .report-content tr:last-child td { border-bottom: none; }
+  .report-content tr:nth-child(even) td { background: #1f1f1f; }
+</style>
