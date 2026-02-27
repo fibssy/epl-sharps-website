@@ -72,7 +72,7 @@ const mondayReports = leagueReports.filter((r) => r.type === 'monday');
               {fridayReports.map((report) => (
                 <ReportCard
                   report={report}
-                  href={`${base}/${league.slug}/${report.id}`}
+                  href={`${base}/${league.slug}/${report.id}/`}
                 />
               ))}
             </div>
@@ -89,7 +89,7 @@ const mondayReports = leagueReports.filter((r) => r.type === 'monday');
               {mondayReports.map((report) => (
                 <ReportCard
                   report={report}
-                  href={`${base}/${league.slug}/${report.id}`}
+                  href={`${base}/${league.slug}/${report.id}/`}
                 />
               ))}
             </div>
